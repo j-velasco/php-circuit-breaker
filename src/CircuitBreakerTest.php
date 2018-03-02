@@ -2,6 +2,7 @@
 
 namespace JVelasco;
 
+use Exception;
 use PHPUnit\Framework\TestCase;
 
 class CircuitBreakerTest extends TestCase
@@ -51,6 +52,45 @@ class CircuitBreakerTest extends TestCase
             $storage->reveal()
         );
 
+        $circuitBreaker->reportSuccess($aService);
+    }
+
+    /** @test */
+    public function it_throw_custom_exceptions_from_storage_increment_failures()
+    {
+        $storage = $this->prophesize(Storage::class);
+
+        $circuitBreaker = new CircuitBreaker(
+            $this->prophesize(AvailabilityStrategy::class)->reveal(),
+            $storage->reveal()
+        );
+        $aService = "a service";
+
+        $storage->incrementFailures($aService)->willThrow(new Exception);
+        $this->expectException(StorageException::class);
+        $circuitBreaker->reportFailure($aService);
+
+        $storage->decrementFailures($aService)->willThrow(new Exception);
+        $this->expectException(StorageException::class);
+        $this->expectExceptionMessage("Error incrementing failures");
+        $circuitBreaker->reportSuccess($aService);
+    }
+
+    /** @test */
+    public function it_throw_custom_exceptions_from_storage_decrement_failures()
+    {
+        $storage = $this->prophesize(Storage::class);
+
+        $circuitBreaker = new CircuitBreaker(
+            $this->prophesize(AvailabilityStrategy::class)->reveal(),
+            $storage->reveal()
+        );
+
+        $aService = "a service";
+
+        $storage->decrementFailures($aService)->willThrow(new Exception);
+        $this->expectException(StorageException::class);
+        $this->expectExceptionMessage("Error decrementing failures");
         $circuitBreaker->reportSuccess($aService);
     }
 }

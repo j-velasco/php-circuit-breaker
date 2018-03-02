@@ -2,6 +2,8 @@
 
 namespace JVelasco;
 
+use Throwable;
+
 class CircuitBreaker
 {
     private $availabilityStrategy;
@@ -22,11 +24,27 @@ class CircuitBreaker
 
     public function reportFailure(string $serviceName)
     {
-        $this->storage->incrementFailures($serviceName);
+        try {
+            $this->storage->incrementFailures($serviceName);
+        } catch (Throwable $ex) {
+            throw new StorageException(
+                "Error incrementing failures",
+                $ex->getCode(),
+                $ex
+            );
+        }
     }
 
     public function reportSuccess(string $serviceName)
     {
-        $this->storage->decrementFailures($serviceName);
+        try {
+            $this->storage->decrementFailures($serviceName);
+        } catch (Throwable $ex) {
+            throw new StorageException(
+                "Error decrementing failures",
+                $ex->getCode(),
+                $ex
+            );
+        }
     }
 }
