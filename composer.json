@@ -1,0 +1,21 @@
+{
+    "name": "j-velasco/php-circuit-breaker",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+      "psr-4": {
+        "JVelasco\\": "src"
+      }
+    },
+    "authors": [
+        {
+            "name": "Jorge Velasco",
+            "email": "zen.chen@gmail.com"
+        }
+    ],
+    "require": {
+      "php": "^7.0",
+      "ext-apcu": "*",
+        "phpunit/phpunit": "^6.5"
+    }
+}
