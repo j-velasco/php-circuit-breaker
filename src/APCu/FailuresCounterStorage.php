@@ -6,6 +6,13 @@ use \JVelasco\CircuitBreaker\FailuresCounterStorage as StorageInterface;
 
 final class FailuresCounterStorage implements StorageInterface
 {
+    private $prefix;
+
+    public function __construct(string $prefix = "cb_failures")
+    {
+        $this->prefix = $prefix;
+    }
+
     public function incrementFailures(string $serviceName)
     {
         apcu_inc($this->counterKeyForService($serviceName));
@@ -19,17 +26,18 @@ final class FailuresCounterStorage implements StorageInterface
             return;
         }
 
-        // this work as a best attempt
+        // this work as a best attempt, if is not possible to updated, just
+        // ignore the failure. Potentially this could be logged
         apcu_cas($counterKey, $currentValue, $currentValue-1);
     }
 
-    public function numberOfFailures(): int
+    public function numberOfFailures(string $serviceName): int
     {
-        // TODO: Implement numberOfFailures() method.
+        return apcu_fetch($this->counterKeyForService($serviceName));
     }
 
     private function counterKeyForService(string $serviceName): string
     {
-        return "cb_failures." . $serviceName;
+        return sprintf("%s.%s", $this->prefix, $serviceName);
     }
 }

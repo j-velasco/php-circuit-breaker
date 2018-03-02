@@ -6,6 +6,8 @@ use PHPUnit\Framework\TestCase;
 
 class FailuresCounterStorageTest extends TestCase
 {
+    const A_SERVICE = "a service";
+
     protected function tearDown()
     {
         apcu_clear_cache();
@@ -16,7 +18,7 @@ class FailuresCounterStorageTest extends TestCase
     {
         $storage = new FailuresCounterStorage();
 
-        $storage->incrementFailures("a service");
+        $storage->incrementFailures(self::A_SERVICE);
 
         $nbOfFailures = apcu_fetch("cb_failures.a service");
         $this->assertEquals($nbOfFailures, 1);
@@ -28,7 +30,7 @@ class FailuresCounterStorageTest extends TestCase
         $storage = new FailuresCounterStorage();
 
         apcu_add("cb_failures.a service", 2);
-        $storage->decrementFailures("a service");
+        $storage->decrementFailures(self::A_SERVICE);
 
         $nbOfFailures = apcu_fetch("cb_failures.a service");
         $this->assertEquals($nbOfFailures, 1);
@@ -39,8 +41,18 @@ class FailuresCounterStorageTest extends TestCase
     {
         $storage = new FailuresCounterStorage();
 
-        $storage->decrementFailures("a service");
+        $storage->decrementFailures(self::A_SERVICE);
         $nbOfFailures = apcu_fetch("cb_failures.a service");
         $this->assertEquals(0, $nbOfFailures);
+    }
+
+    /** @test */
+    public function it_return_number_of_failures()
+    {
+        $storage = new FailuresCounterStorage();
+
+        $this->assertEquals(0, $storage->numberOfFailures(self::A_SERVICE));
+        $storage->incrementFailures(self::A_SERVICE);
+        $this->assertEquals(1, $storage->numberOfFailures(self::A_SERVICE));
     }
 }

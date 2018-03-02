@@ -6,5 +6,5 @@ interface FailuresCounterStorage
 {
     public function incrementFailures(string $serviceName);
     public function decrementFailures(string $serviceName);
-    public function numberOfFailures(): int;
+    public function numberOfFailures(string $serviceName): int;
 }
