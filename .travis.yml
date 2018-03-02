@@ -8,4 +8,8 @@ before_install:
 
 script:
   - composer install
-  - phpunit
+  - phpunit --coverage-clover=coverage.xml
+
+after_success:
+  - wget https://scrutinizer-ci.com/ocular.phar
+  - php ocular.phar code-coverage:upload --access-token="$SCRUTINIZER_TOKEN" --format=php-clover coverage.xml
