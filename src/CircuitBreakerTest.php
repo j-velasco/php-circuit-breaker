@@ -18,7 +18,7 @@ class CircuitBreakerTest extends TestCase
 
         $circuitBreaker = new CircuitBreaker(
             $strategy->reveal(),
-            $this->prophesize(Storage::class)->reveal()
+            $this->prophesize(FailuresCounterStorage::class)->reveal()
         );
 
         $this->assertTrue($circuitBreaker->isAvailable($anAvailableService));
@@ -28,7 +28,7 @@ class CircuitBreakerTest extends TestCase
     /** @test */
     public function it_delegates_to_storage_counter_for_failures()
     {
-        $storage = $this->prophesize(Storage::class);
+        $storage = $this->prophesize(FailuresCounterStorage::class);
         $aService = "a service";
         $storage->incrementFailures($aService)->shouldBeCalledTimes(1);
 
@@ -43,7 +43,7 @@ class CircuitBreakerTest extends TestCase
     /** @test */
     public function it_delegates_to_storage_counter_for_successes()
     {
-        $storage = $this->prophesize(Storage::class);
+        $storage = $this->prophesize(FailuresCounterStorage::class);
         $aService = "a service";
         $storage->decrementFailures($aService)->shouldBeCalledTimes(1);
 
@@ -58,7 +58,7 @@ class CircuitBreakerTest extends TestCase
     /** @test */
     public function it_throw_custom_exceptions_from_storage_increment_failures()
     {
-        $storage = $this->prophesize(Storage::class);
+        $storage = $this->prophesize(FailuresCounterStorage::class);
 
         $circuitBreaker = new CircuitBreaker(
             $this->prophesize(AvailabilityStrategy::class)->reveal(),
@@ -79,7 +79,7 @@ class CircuitBreakerTest extends TestCase
     /** @test */
     public function it_throw_custom_exceptions_from_storage_decrement_failures()
     {
-        $storage = $this->prophesize(Storage::class);
+        $storage = $this->prophesize(FailuresCounterStorage::class);
 
         $circuitBreaker = new CircuitBreaker(
             $this->prophesize(AvailabilityStrategy::class)->reveal(),

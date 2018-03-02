@@ -2,7 +2,7 @@
 
 namespace JVelasco;
 
-interface Storage
+interface FailuresCounterStorage
 {
     public function incrementFailures(string $serviceName);
     public function decrementFailures(string $serviceName);

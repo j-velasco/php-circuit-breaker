@@ -11,7 +11,7 @@ class CircuitBreaker
 
     public function __construct(
         AvailabilityStrategy $availabilityStrategy,
-        Storage $storage
+        FailuresCounterStorage $storage
     ) {
         $this->availabilityStrategy = $availabilityStrategy;
         $this->storage = $storage;
