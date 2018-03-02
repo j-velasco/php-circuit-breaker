@@ -3,7 +3,7 @@ php:
   - '7.0'
 
 before_install:
-  - echo "extension = acpu.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+  - echo yes | pecl upgrade apcu
 
 script:
   - composer install
