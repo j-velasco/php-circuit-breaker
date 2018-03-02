@@ -2,7 +2,9 @@ language: php
 php:
   - '7.0'
 
-before_install: echo "extension = acpu.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+before_install:
+  - pecl install apcu-5.1.5
+  - echo "extension = acpu.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
 
 script:
   - composer install
