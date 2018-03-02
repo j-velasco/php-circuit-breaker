@@ -1,6 +1,6 @@
 <?php
 
-namespace JVelasco;
+namespace JVelasco\CircuitBreaker;
 
 interface FailuresCounterStorage
 {
