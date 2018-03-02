@@ -15,7 +15,7 @@
     ],
     "require": {
       "php": "^7.0",
-      "ext-apcu": "*",
-        "phpunit/phpunit": "^6.5"
+      "ext-apc": "*",
+      "phpunit/phpunit": "^6.5"
     }
 }
