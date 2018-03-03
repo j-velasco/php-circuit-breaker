@@ -7,7 +7,7 @@ use PHPUnit\Framework\TestCase;
 
 final class SharedStorageTest extends TestCase
 {
-    const A_SERVICE = "a service";
+    const SERVICE_NAME = "a service";
 
     protected function tearDown()
     {
@@ -19,7 +19,7 @@ final class SharedStorageTest extends TestCase
     {
         $storage = new SharedStorage();
 
-        $storage->incrementFailures(self::A_SERVICE);
+        $storage->incrementFailures(self::SERVICE_NAME);
 
         $nbOfFailures = apcu_fetch("cb_failures.a service");
         $this->assertEquals($nbOfFailures, 1);
@@ -31,7 +31,7 @@ final class SharedStorageTest extends TestCase
         $storage = new SharedStorage();
 
         apcu_add("cb_failures.a service", 2);
-        $storage->decrementFailures(self::A_SERVICE);
+        $storage->decrementFailures(self::SERVICE_NAME);
 
         $nbOfFailures = apcu_fetch("cb_failures.a service");
         $this->assertEquals($nbOfFailures, 1);
@@ -42,7 +42,7 @@ final class SharedStorageTest extends TestCase
     {
         $storage = new SharedStorage();
 
-        $storage->decrementFailures(self::A_SERVICE);
+        $storage->decrementFailures(self::SERVICE_NAME);
         $nbOfFailures = apcu_fetch("cb_failures.a service");
         $this->assertEquals(0, $nbOfFailures);
     }
@@ -52,9 +52,9 @@ final class SharedStorageTest extends TestCase
     {
         $storage = new SharedStorage();
 
-        $this->assertEquals(0, $storage->numberOfFailures(self::A_SERVICE));
-        $storage->incrementFailures(self::A_SERVICE);
-        $this->assertEquals(1, $storage->numberOfFailures(self::A_SERVICE));
+        $this->assertEquals(0, $storage->numberOfFailures(self::SERVICE_NAME));
+        $storage->incrementFailures(self::SERVICE_NAME);
+        $this->assertEquals(1, $storage->numberOfFailures(self::SERVICE_NAME));
     }
 
     /** @test */
@@ -64,16 +64,24 @@ final class SharedStorageTest extends TestCase
         $strategy->getId()->willReturn("strategy_id");
 
         $storage = new SharedStorage();
-        $storage->saveStrategyData($strategy->reveal(), "a_key", "a_value");
-        $this->assertEquals("a_value", $storage->getStrategyData($strategy->reveal(), "a_key"));
+        $storage->saveStrategyData(
+            $strategy->reveal(),
+            self::SERVICE_NAME,
+            "a_key",
+            "a_value"
+        );
+        $this->assertEquals(
+            "a_value",
+            $storage->getStrategyData($strategy->reveal(), self::SERVICE_NAME,"a_key")
+        );
     }
 
     /** @test */
     public function it_reset_failure_counters()
     {
         $storage = new SharedStorage();
-        $storage->incrementFailures(self::A_SERVICE);
-        $storage->resetFailuresCounter(self::A_SERVICE);
-        $this->assertEquals(0, $storage->numberOfFailures(self::A_SERVICE));
+        $storage->incrementFailures(self::SERVICE_NAME);
+        $storage->resetFailuresCounter(self::SERVICE_NAME);
+        $this->assertEquals(0, $storage->numberOfFailures(self::SERVICE_NAME));
     }
 }

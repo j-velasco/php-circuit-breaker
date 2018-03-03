@@ -35,14 +35,21 @@ final class SharedStorage implements FailuresCounterStorage, Storage
         return apcu_fetch($this->counterKeyForService($serviceName));
     }
 
-    public function saveStrategyData(AvailabilityStrategy $strategy, string $key, string $value)
-    {
-        apcu_store($this->keyForStrategyData($strategy, $key), $value);
+    public function saveStrategyData(
+        AvailabilityStrategy $strategy,
+        string $serviceName,
+        string $key,
+        string $value
+    ) {
+        apcu_store($this->keyForStrategyData($strategy, $serviceName, $key), $value);
     }
 
-    public function getStrategyData(AvailabilityStrategy $strategy, string $key): string
-    {
-        return apcu_fetch($this->keyForStrategyData($strategy, $key));
+    public function getStrategyData(
+        AvailabilityStrategy $strategy,
+        string $serviceName,
+        string $key
+    ): string {
+        return apcu_fetch($this->keyForStrategyData($strategy, $serviceName, $key));
     }
 
     public function resetFailuresCounter(string $serviceName)
@@ -55,8 +62,11 @@ final class SharedStorage implements FailuresCounterStorage, Storage
         return sprintf("%s.%s", $this->failuresCounterPrefix, $serviceName);
     }
 
-    private function keyForStrategyData(AvailabilityStrategy $strategy, string $key): string
-    {
-        return sprintf("%s.%s", $strategy->getId(), $key);
+    private function keyForStrategyData(
+        AvailabilityStrategy $strategy,
+        string $serviceName,
+        string $key
+    ): string {
+        return implode(".", [$strategy->getId(), $serviceName, $key]);
     }
 }
