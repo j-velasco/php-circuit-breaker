@@ -5,7 +5,7 @@ namespace JVelasco\CircuitBreaker\AvailabilityStrategy;
 use JVelasco\CircuitBreaker\StorageException;
 use PHPUnit\Framework\TestCase;
 
-final class FixWaitTimeToRetryTest extends TestCase
+final class FixedWaitTimeToRetryTest extends TestCase
 {
     const A_SERVICE = "a service";
     const MAX_FAILURES = 1;
@@ -36,7 +36,7 @@ final class FixWaitTimeToRetryTest extends TestCase
         );
 
         $storage->numberOfFailures(self::A_SERVICE)->willReturn(self::MAX_FAILURES);
-        $storage->getStrategyData($strategy, "last_try");
+        $storage->getStrategyData($strategy, "last_try")->willReturn("");
         $this->assertFalse($strategy->isAvailable(self::A_SERVICE));
     }
 
