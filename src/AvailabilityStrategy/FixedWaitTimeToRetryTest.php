@@ -54,6 +54,7 @@ final class FixedWaitTimeToRetryTest extends TestCase
         $oneSecAndOneMillisecond = floor((microtime(true) * 1000)) - 1001;
         $storage->getStrategyData($strategy, "last_try")
             ->willReturn((string) $oneSecAndOneMillisecond);
+        $storage->resetFailuresCounter(self::A_SERVICE)->shouldBeCalledTimes(1);
 
         $this->assertTrue($strategy->isAvailable(self::A_SERVICE));
     }

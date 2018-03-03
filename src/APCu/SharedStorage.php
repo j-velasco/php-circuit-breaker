@@ -45,6 +45,11 @@ final class SharedStorage implements FailuresCounterStorage, Storage
         return apcu_fetch($this->keyForStrategyData($strategy, $key));
     }
 
+    public function resetFailuresCounter(string $serviceName)
+    {
+        apcu_store($this->counterKeyForService($serviceName), 0);
+    }
+
     private function counterKeyForService(string $serviceName): string
     {
         return sprintf("%s.%s", $this->failuresCounterPrefix, $serviceName);

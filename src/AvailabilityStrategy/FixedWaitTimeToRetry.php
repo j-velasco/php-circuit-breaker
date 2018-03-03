@@ -27,6 +27,7 @@ final class FixedWaitTimeToRetry implements AvailabilityStrategy
 
             $lastRetry = $this->getLastTryTime();
             if ($this->now() - $lastRetry > $this->waitTime) {
+                $this->storage->resetFailuresCounter($serviceName);
                 return true;
             }
 

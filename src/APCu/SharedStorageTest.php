@@ -67,4 +67,13 @@ final class SharedStorageTest extends TestCase
         $storage->saveStrategyData($strategy->reveal(), "a_key", "a_value");
         $this->assertEquals("a_value", $storage->getStrategyData($strategy->reveal(), "a_key"));
     }
+
+    /** @test */
+    public function it_reset_failure_counters()
+    {
+        $storage = new SharedStorage();
+        $storage->incrementFailures(self::A_SERVICE);
+        $storage->resetFailuresCounter(self::A_SERVICE);
+        $this->assertEquals(0, $storage->numberOfFailures(self::A_SERVICE));
+    }
 }
