@@ -5,7 +5,7 @@ php:
   - '7.2'
 
 before_install:
-  - echo 'no' | pecl install apcu
+  - (echo 'no' | pecl install apcu) || true
   - cp php.ini ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
 
 script:
