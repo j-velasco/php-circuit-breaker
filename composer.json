@@ -15,7 +15,9 @@
   ],
   "require": {
     "php": "^7.0",
-    "ext-apcu": "*"
+    "ext-apcu": "*",
+    "php-extended/php-http-message-psr7": "^1.0",
+    "guzzlehttp/guzzle": "~6.0"
   },
   "require-dev": {
     "phpunit/phpunit": "^6.5"
