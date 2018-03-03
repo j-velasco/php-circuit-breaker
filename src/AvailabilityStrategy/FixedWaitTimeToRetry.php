@@ -26,7 +26,7 @@ final class FixedWaitTimeToRetry implements AvailabilityStrategy
             }
 
             $lastRetry = $this->getLastTryTime();
-            if (time() - $lastRetry > $this->waitTime) {
+            if ($this->now() - $lastRetry > $this->waitTime) {
                 return true;
             }
 
@@ -44,6 +44,11 @@ final class FixedWaitTimeToRetry implements AvailabilityStrategy
     private function getLastTryTime(): int
     {
         $lastTryTimestamp = $this->storage->getStrategyData($this, "last_try");
-        return $lastTryTimestamp ? $lastTryTimestamp : time();
+        return $lastTryTimestamp ? $lastTryTimestamp : $this->now();
+    }
+
+    private function now(): int
+    {
+        return floor(microtime(true) * 1000);
     }
 }

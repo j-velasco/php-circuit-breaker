@@ -9,7 +9,7 @@ final class FixedWaitTimeToRetryTest extends TestCase
 {
     const A_SERVICE = "a service";
     const MAX_FAILURES = 1;
-    const ONE_SECOND = 1;
+    const ONE_SECOND = 1000;
 
     /** @test */
     public function it_report_as_available()
@@ -51,10 +51,9 @@ final class FixedWaitTimeToRetryTest extends TestCase
         );
 
         $storage->numberOfFailures(self::A_SERVICE)->willReturn(self::MAX_FAILURES);
-        $twoSecondsAgo = new \DateTime();
-        $twoSecondsAgo->modify("-2 sec");
+        $oneSecAndOneMillisecond = floor((microtime(true) * 1000)) - 1001;
         $storage->getStrategyData($strategy, "last_try")
-            ->willReturn((string) $twoSecondsAgo->getTimestamp());
+            ->willReturn((string) $oneSecAndOneMillisecond);
 
         $this->assertTrue($strategy->isAvailable(self::A_SERVICE));
     }
