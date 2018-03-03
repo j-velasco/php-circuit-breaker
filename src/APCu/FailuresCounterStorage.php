@@ -21,14 +21,11 @@ final class FailuresCounterStorage implements StorageInterface
     public function decrementFailures(string $serviceName)
     {
         $counterKey = $this->counterKeyForService($serviceName);
-        $currentValue = apcu_fetch($counterKey);
-        if ($currentValue <= 0) {
-            return;
-        }
+        $newValue = apcu_dec($counterKey);
 
-        // this work as a best attempt, if is not possible to updated, just
-        // ignore the failure. Potentially this could be logged
-        apcu_cas($counterKey, $currentValue, $currentValue-1);
+        if ($newValue < 0) {
+            apcu_store($counterKey, 0);
+        }
     }
 
     public function numberOfFailures(string $serviceName): int
