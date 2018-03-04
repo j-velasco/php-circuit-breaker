@@ -2,15 +2,15 @@
 
 namespace JVelasco\CircuitBreaker\AvailabilityStrategy;
 
-final class FixedWaitTimeToRetry extends NumberOfAttemptsTemplate
+class NumberOfAttemptsTemplateTestHarness extends NumberOfAttemptsTemplate
 {
     public function getId(): string
     {
-        return "fixed_time_to_retry";
+        return "test_harness";
     }
 
     protected function waitTime(int $attempt): int
     {
-        return $this->baseWaitTime;
+        return 0;
     }
 }

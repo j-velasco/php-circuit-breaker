@@ -2,13 +2,12 @@
 
 namespace JVelasco\CircuitBreaker\AvailabilityStrategy;
 
-use JVelasco\CircuitBreaker\StorageException;
 use PHPUnit\Framework\TestCase;
 
 final class FixedWaitTimeToRetryTest extends TestCase
 {
     const SERVICE_NAME = "a_service";
-    const LAST_ATTEMPT_KEY = "last_try";
+    const LAST_ATTEMPT_KEY = "last_attempt";
     const MAX_FAILURES = 1;
     const ONE_SECOND = 1000;
 
@@ -41,7 +40,7 @@ final class FixedWaitTimeToRetryTest extends TestCase
     }
 
     /** @test */
-    public function it_close_the_circuit_after_timeout()
+    public function it_closes_the_circuit_after_timeout()
     {
         $storage = new InMemoryStorage();
         $strategy = new FixedWaitTimeToRetry(

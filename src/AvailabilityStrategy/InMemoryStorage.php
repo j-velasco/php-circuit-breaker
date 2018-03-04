@@ -17,7 +17,7 @@ class InMemoryStorage implements Storage
             throw new StorageException();
         }
 
-        return $this->numberOfFailures[$serviceName];
+        return (int) $this->numberOfFailures[$serviceName];
     }
 
     public function resetFailuresCounter(string $serviceName)
@@ -46,7 +46,7 @@ class InMemoryStorage implements Storage
         string $key
     ): string
     {
-        if (empty($this->strategyData[$strategy->getId()][$serviceName])) {
+        if (empty($this->strategyData[$strategy->getId()][$serviceName][$key])) {
             return "";
         }
 
