@@ -4,7 +4,7 @@ namespace JVelasco\CircuitBreaker\AvailabilityStrategy\Backoff;
 
 use JVelasco\CircuitBreaker\AvailabilityStrategy\BackoffStrategy;
 
-final class FixedWaitTimeToRetry implements BackoffStrategy
+final class Fixed implements BackoffStrategy
 {
     public function waitTime(int $attempt, int $baseWaitTime): int
     {

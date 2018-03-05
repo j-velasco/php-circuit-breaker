@@ -2,7 +2,7 @@
 
 namespace JVelasco\CircuitBreaker\AvailabilityStrategy;
 
-use JVelasco\CircuitBreaker\AvailabilityStrategy\Backoff\FixedWaitTimeToRetry;
+use JVelasco\CircuitBreaker\AvailabilityStrategy\Backoff\Fixed;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 
@@ -59,7 +59,7 @@ final class NumberOfAttemptsTemplateTest extends TestCase
         $storage = new InMemoryStorage();
         $strategy = new TimeBackoff(
             $storage,
-            new FixedWaitTimeToRetry(),
+            new Fixed(),
             0,
             0
         );
