@@ -93,7 +93,7 @@ final class NumberOfAttemptsTemplateTest extends TestCase
 
 
     /** @test */
-    public function it_tracks_number_of_attempts()
+    public function it_tracks_attempts()
     {
         $storage = new InMemoryStorage();
         $backoffStrategy = $this->prophesize(BackoffStrategy::class);
@@ -112,10 +112,10 @@ final class NumberOfAttemptsTemplateTest extends TestCase
             $strategy,
             self::SERVICE_NAME,
             self::LAST_ATTEMPT_KEY,
-            floor(microtime(true) * 1000) - self::MAX_FAILURES);
+            floor(microtime(true) * 1000) - self::ONE_SECOND);
 
         $strategy->isAvailable(self::SERVICE_NAME);
-        $this->assertEquals(self::MAX_FAILURES, $storage->getStrategyData($strategy, self::SERVICE_NAME, "attempts"));
+        $this->assertEquals(1, $storage->getStrategyData($strategy, self::SERVICE_NAME, "attempts"));
 
         $storage->setNumberOfFailures(self::SERVICE_NAME, self::MAX_FAILURES);
         $strategy->isAvailable(self::SERVICE_NAME);

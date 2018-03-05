@@ -8,6 +8,8 @@ use JVelasco\CircuitBreaker\StorageException;
 class NumberOfAttemptsTemplate implements AvailabilityStrategy
 {
     const ATTEMPTS_KEY = "attempts";
+    const LAST_ATTEMPT_TIME_KEY = "last_attempt";
+
     /** @var Storage */
     protected $storage;
     /** @var int */
@@ -38,13 +40,7 @@ class NumberOfAttemptsTemplate implements AvailabilityStrategy
 
             $attempt = $this->getLastAttempt($serviceName);
             if ($this->millisecondsSinceLastAttempt($serviceName) > $this->backoffStrategy->waitTime($attempt, $this->baseWaitTime)) {
-                $this->storage->saveStrategyData(
-                    $this,
-                    $serviceName,
-                    self::ATTEMPTS_KEY,
-                    $attempt+1
-                );
-                $this->storage->resetFailuresCounter($serviceName);
+                $this->saveAttempt($serviceName, $attempt+1);
                 return true;
             }
 
@@ -59,7 +55,7 @@ class NumberOfAttemptsTemplate implements AvailabilityStrategy
         $lastTryTimestamp = $this->storage->getStrategyData(
             $this,
             $serviceName,
-            "last_attempt"
+            self::LAST_ATTEMPT_TIME_KEY
         );
         return $lastTryTimestamp ? $lastTryTimestamp : $this->now();
     }
@@ -79,9 +75,26 @@ class NumberOfAttemptsTemplate implements AvailabilityStrategy
         return $this->backoffStrategy->id();
     }
 
-    private function millisecondsSinceLastAttempt($serviceName): int
+    private function millisecondsSinceLastAttempt(string $serviceName): int
     {
         $lastAttempt = $this->getLastAttemptTime($serviceName);
         return $this->now() - $lastAttempt;
+    }
+
+    private function saveAttempt(string $serviceName, int $attempt)
+    {
+        $this->storage->saveStrategyData(
+            $this,
+            $serviceName,
+            self::ATTEMPTS_KEY,
+            $attempt
+        );
+        $this->storage->saveStrategyData(
+            $this,
+            $serviceName,
+            self::LAST_ATTEMPT_TIME_KEY,
+            $this->now()
+        );
+        $this->storage->resetFailuresCounter($serviceName);
     }
 }
