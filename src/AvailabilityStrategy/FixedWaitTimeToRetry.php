@@ -2,15 +2,15 @@
 
 namespace JVelasco\CircuitBreaker\AvailabilityStrategy;
 
-final class FixedWaitTimeToRetry extends NumberOfAttemptsTemplate
+final class FixedWaitTimeToRetry implements BackoffStrategy
 {
-    public function getId(): string
+    public function waitTime(int $attempt, int $baseWaitTime): int
     {
-        return "fixed_time_to_retry";
+        return $baseWaitTime;
     }
 
-    protected function waitTime(int $attempt): int
+    public function id(): string
     {
-        return $this->baseWaitTime;
+        return "fixed_time";
     }
 }

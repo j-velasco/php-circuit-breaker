@@ -5,23 +5,28 @@ namespace JVelasco\CircuitBreaker\AvailabilityStrategy;
 use JVelasco\CircuitBreaker\AvailabilityStrategy;
 use JVelasco\CircuitBreaker\StorageException;
 
-abstract class NumberOfAttemptsTemplate implements AvailabilityStrategy
+class NumberOfAttemptsTemplate implements AvailabilityStrategy
 {
+    const ATTEMPTS_KEY = "attempts";
     /** @var Storage */
     protected $storage;
     /** @var int */
     protected $maxFailures;
     /** @var int initial time to wait in milliseconds */
     protected $baseWaitTime;
+    /** @var BackoffStrategy */
+    private $backoffStrategy;
 
     public function __construct(
         Storage $storage,
+        BackoffStrategy $backoffStrategy,
         int $maxFailures,
         int $baseWaitTime
     ) {
         $this->storage = $storage;
         $this->maxFailures = $maxFailures;
         $this->baseWaitTime = $baseWaitTime;
+        $this->backoffStrategy = $backoffStrategy;
     }
 
     public function isAvailable(string $serviceName): bool
@@ -31,13 +36,12 @@ abstract class NumberOfAttemptsTemplate implements AvailabilityStrategy
                 return true;
             }
 
-            $lastRetry = $this->getLastAttemptTime($serviceName);
             $attempt = $this->getLastAttempt($serviceName);
-            if ($this->now() - $lastRetry > $this->waitTime($attempt)) {
+            if ($this->millisecondsSinceLastAttempt($serviceName) > $this->backoffStrategy->waitTime($attempt, $this->baseWaitTime)) {
                 $this->storage->saveStrategyData(
                     $this,
                     $serviceName,
-                    "attempts",
+                    self::ATTEMPTS_KEY,
                     $attempt+1
                 );
                 $this->storage->resetFailuresCounter($serviceName);
@@ -49,8 +53,6 @@ abstract class NumberOfAttemptsTemplate implements AvailabilityStrategy
             return true;
         }
     }
-
-    abstract protected function waitTime(int $attempt): int;
 
     private function getLastAttemptTime(string $serviceName): int
     {
@@ -69,6 +71,17 @@ abstract class NumberOfAttemptsTemplate implements AvailabilityStrategy
 
     private function getLastAttempt($serviceName): int
     {
-        return (int) $this->storage->getStrategyData($this, $serviceName, "attempts");
+        return (int) $this->storage->getStrategyData($this, $serviceName, self::ATTEMPTS_KEY);
+    }
+
+    public function getId(): string
+    {
+        return $this->backoffStrategy->id();
+    }
+
+    private function millisecondsSinceLastAttempt($serviceName): int
+    {
+        $lastAttempt = $this->getLastAttemptTime($serviceName);
+        return $this->now() - $lastAttempt;
     }
 }
