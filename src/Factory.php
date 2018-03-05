@@ -3,7 +3,7 @@
 namespace JVelasco\CircuitBreaker;
 
 use JVelasco\CircuitBreaker\APCu\SharedStorage;
-use JVelasco\CircuitBreaker\AvailabilityStrategy\Backoff\Fixed;
+use JVelasco\CircuitBreaker\AvailabilityStrategy\Backoff\Exponential;
 use JVelasco\CircuitBreaker\AvailabilityStrategy\TimeBackoff;
 
 class Factory
@@ -13,7 +13,7 @@ class Factory
         $storage = new SharedStorage();
         $strategy = new TimeBackoff(
             $storage,
-            new Fixed(),
+            new Exponential(),
             $maxFailures,
             $waitTime
         );
