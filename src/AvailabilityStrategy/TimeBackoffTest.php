@@ -6,7 +6,7 @@ use JVelasco\CircuitBreaker\AvailabilityStrategy\Backoff\Fixed;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 
-final class NumberOfAttemptsTemplateTest extends TestCase
+final class TimeBackoffTest extends TestCase
 {
     const SERVICE_NAME = 'service name';
     const MAX_FAILURES = 1;
