@@ -119,6 +119,11 @@ final class NumberOfAttemptsTemplateTest extends TestCase
         $this->assertEquals(1, $storage->getStrategyData($strategy, self::SERVICE_NAME, "attempts"));
 
         $storage->setNumberOfFailures(self::SERVICE_NAME, self::MAX_FAILURES);
+        $storage->saveStrategyData(
+            $strategy,
+            self::SERVICE_NAME,
+            self::LAST_ATTEMPT_KEY,
+            floor(microtime(true) * 1000) - self::ONE_SECOND);
         $strategy->isAvailable(self::SERVICE_NAME);
         $this->assertEquals(2, $storage->getStrategyData($strategy, self::SERVICE_NAME, "attempts"));
     }
