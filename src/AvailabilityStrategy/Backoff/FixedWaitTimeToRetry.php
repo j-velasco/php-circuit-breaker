@@ -1,6 +1,8 @@
 <?php
 
-namespace JVelasco\CircuitBreaker\AvailabilityStrategy;
+namespace JVelasco\CircuitBreaker\AvailabilityStrategy\Backoff;
+
+use JVelasco\CircuitBreaker\AvailabilityStrategy\BackoffStrategy;
 
 final class FixedWaitTimeToRetry implements BackoffStrategy
 {

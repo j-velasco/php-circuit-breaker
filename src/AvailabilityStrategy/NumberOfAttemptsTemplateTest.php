@@ -2,6 +2,7 @@
 
 namespace JVelasco\CircuitBreaker\AvailabilityStrategy;
 
+use JVelasco\CircuitBreaker\AvailabilityStrategy\Backoff\FixedWaitTimeToRetry;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 
@@ -17,7 +18,7 @@ final class NumberOfAttemptsTemplateTest extends TestCase
     {
         $storage = new InMemoryStorage();
         $backoffStrategy = $this->prophesize(BackoffStrategy::class);
-        $strategy = new NumberOfAttemptsTemplate(
+        $strategy = new TimeBackoff(
             $storage,
             $backoffStrategy->reveal(),
             self::MAX_FAILURES,
@@ -33,7 +34,7 @@ final class NumberOfAttemptsTemplateTest extends TestCase
     {
         $storage = new InMemoryStorage();;
         $backoffStrategy = $this->prophesize(BackoffStrategy::class);
-        $strategy = new NumberOfAttemptsTemplate(
+        $strategy = new TimeBackoff(
             $storage,
             $backoffStrategy->reveal(),
             self::MAX_FAILURES,
@@ -56,7 +57,7 @@ final class NumberOfAttemptsTemplateTest extends TestCase
     public function it_closes_the_circuit_after_timeout()
     {
         $storage = new InMemoryStorage();
-        $strategy = new NumberOfAttemptsTemplate(
+        $strategy = new TimeBackoff(
             $storage,
             new FixedWaitTimeToRetry(),
             0,
@@ -80,7 +81,7 @@ final class NumberOfAttemptsTemplateTest extends TestCase
     public function it_reports_as_available_on_storage_failures()
     {
         $storage = new InMemoryStorage();
-        $strategy = new NumberOfAttemptsTemplate(
+        $strategy = new TimeBackoff(
             $storage,
             $this->prophesize(BackoffStrategy::class)->reveal(),
             self::MAX_FAILURES,
@@ -97,7 +98,7 @@ final class NumberOfAttemptsTemplateTest extends TestCase
     {
         $storage = new InMemoryStorage();
         $backoffStrategy = $this->prophesize(BackoffStrategy::class);
-        $strategy = new NumberOfAttemptsTemplate(
+        $strategy = new TimeBackoff(
             $storage,
             $backoffStrategy->reveal(),
             self::MAX_FAILURES,

@@ -1,7 +1,8 @@
 <?php
 
-namespace JVelasco\CircuitBreaker\AvailabilityStrategy;
+namespace JVelasco\CircuitBreaker\AvailabilityStrategy\Backoff;
 
+use JVelasco\CircuitBreaker\AvailabilityStrategy\Backoff\FixedWaitTimeToRetry;
 use PHPUnit\Framework\TestCase;
 
 final class FixedWaitTimeToRetryTest extends TestCase

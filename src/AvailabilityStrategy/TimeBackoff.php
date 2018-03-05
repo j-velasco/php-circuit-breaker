@@ -5,7 +5,7 @@ namespace JVelasco\CircuitBreaker\AvailabilityStrategy;
 use JVelasco\CircuitBreaker\AvailabilityStrategy;
 use JVelasco\CircuitBreaker\StorageException;
 
-class NumberOfAttemptsTemplate implements AvailabilityStrategy
+class TimeBackoff implements AvailabilityStrategy
 {
     const ATTEMPTS_KEY = "attempts";
     const LAST_ATTEMPT_TIME_KEY = "last_attempt";
