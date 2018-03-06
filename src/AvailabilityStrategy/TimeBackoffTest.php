@@ -2,9 +2,9 @@
 
 namespace JVelasco\CircuitBreaker\AvailabilityStrategy;
 
-use JVelasco\CircuitBreaker\AvailabilityStrategy\Backoff\Fixed;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\Prophecy\ObjectProphecy;
 
 final class TimeBackoffTest extends TestCase
 {
@@ -13,68 +13,65 @@ final class TimeBackoffTest extends TestCase
     const ONE_SECOND = 1000;
     const LAST_ATTEMPT_KEY = "last_attempt";
 
-    /** @test */
-    public function it_report_as_available_when_failures_is_under_threshold()
+    /** @var InMemoryStorage */
+    private $storage;
+    /** @var TimeBackoff */
+    private $sut;
+    /** @var BackoffStrategy|ObjectProphecy */
+    private $backoffStrategy;
+
+    protected function setUp()
     {
-        $storage = new InMemoryStorage();
-        $backoffStrategy = $this->prophesize(BackoffStrategy::class);
-        $strategy = new TimeBackoff(
-            $storage,
-            $backoffStrategy->reveal(),
+        $this->storage = new InMemoryStorage();
+        $this->backoffStrategy = $this->prophesize(BackoffStrategy::class);
+        $this->backoffStrategy->id()->willReturn("test_backoff");
+        $this->sut = new TimeBackoff(
+            $this->storage,
+            $this->backoffStrategy->reveal(),
             self::MAX_FAILURES,
             self::ONE_SECOND
         );
+    }
 
-        $storage->setNumberOfFailures(self::SERVICE_NAME, self::MAX_FAILURES- self::MAX_FAILURES);
-        $this->assertTrue($strategy->isAvailable(self::SERVICE_NAME));
+    /** @test */
+    public function it_report_as_available_when_failures_is_under_threshold()
+    {
+        $this->failuresAreUnderThreshold();
+        $this->assertTrue($this->sut->isAvailable(self::SERVICE_NAME));
     }
 
     /** @test */
     public function it_reports_as_non_available_between_attempts()
     {
-        $storage = new InMemoryStorage();;
-        $backoffStrategy = $this->prophesize(BackoffStrategy::class);
-        $strategy = new TimeBackoff(
-            $storage,
-            $backoffStrategy->reveal(),
-            self::MAX_FAILURES,
-            self::ONE_SECOND
-        );
-
-        $backoffStrategy->id()->willReturn("test");
-        $storage->saveStrategyData(
-            $strategy,
+        $this->storage->saveStrategyData(
+            $this->sut,
             self::SERVICE_NAME,
             self::LAST_ATTEMPT_KEY,
             floor(microtime(true) * 1000)
         );
-        $storage->setNumberOfFailures(self::SERVICE_NAME, self::MAX_FAILURES);
-        $backoffStrategy->waitTime(Argument::any(), self::ONE_SECOND)->willReturn(100);
-        $this->assertFalse($strategy->isAvailable(self::SERVICE_NAME));
+        $this->setFailuresToMaxAllowed($this->storage);
+        $this->backoffStrategy->waitTime(Argument::any(), self::ONE_SECOND)
+            ->willReturn(100);
+        $this->assertFalse($this->sut->isAvailable(self::SERVICE_NAME));
     }
 
     /** @test */
     public function it_closes_the_circuit_after_timeout()
     {
-        $storage = new InMemoryStorage();
-        $strategy = new TimeBackoff(
-            $storage,
-            new Fixed(),
-            0,
-            0
-        );
-
-        $storage->setNumberOfFailures(self::SERVICE_NAME, self::MAX_FAILURES);
-        $oneSecAndOneMillisecond = floor((microtime(true) * 1000)) - 1001;
-        $storage->saveStrategyData(
-            $strategy,
+        $this->setFailuresToMaxAllowed();
+        $oneSecAndOneMillisecond = floor((microtime(true) * 1000)) - self::ONE_SECOND - 1;
+        $this->storage->saveStrategyData(
+            $this->sut,
             self::SERVICE_NAME,
             self::LAST_ATTEMPT_KEY,
             (string) $oneSecAndOneMillisecond
         );
 
-        $this->assertTrue($strategy->isAvailable(self::SERVICE_NAME));
-        $this->assertEquals(0, $storage->numberOfFailures(self::SERVICE_NAME));
+        $this->backoffStrategy->waitTime(Argument::any(), self::ONE_SECOND)
+            ->willReturn(self::ONE_SECOND);
+
+        $this->assertTrue($this->sut->isAvailable(self::SERVICE_NAME));
+        $this->assertEquals(0, $this->storage->numberOfFailures(self::SERVICE_NAME));
     }
 
     /** @test */
@@ -96,35 +93,43 @@ final class TimeBackoffTest extends TestCase
     /** @test */
     public function it_tracks_attempts()
     {
-        $storage = new InMemoryStorage();
-        $backoffStrategy = $this->prophesize(BackoffStrategy::class);
-        $strategy = new TimeBackoff(
-            $storage,
-            $backoffStrategy->reveal(),
-            self::MAX_FAILURES,
-            self::ONE_SECOND
+        $this->setFailuresToMaxAllowed();
+        $this->waitTimeHaveOccurred();
+
+        $this->sut->isAvailable(self::SERVICE_NAME);
+        $this->assertEquals(1, $this->storage->getStrategyData($this->sut, self::SERVICE_NAME, "attempts"));
+
+        $this->setFailuresToMaxAllowed();
+        $this->waitTimeHaveOccurred();
+
+        $this->sut->isAvailable(self::SERVICE_NAME);
+        $this->assertEquals(2, $this->storage->getStrategyData($this->sut, self::SERVICE_NAME, "attempts"));
+    }
+
+    private function setFailuresToMaxAllowed()
+    {
+        $this->storage->setNumberOfFailures(
+            self::SERVICE_NAME,
+            self::MAX_FAILURES
         );
+    }
 
-        $storage->setNumberOfFailures(self::SERVICE_NAME, self::MAX_FAILURES);
-        $backoffStrategy->id()->willReturn("test");
-        $backoffStrategy->waitTime(Argument::any(), Argument::any())->willReturn(0);
+    private function failuresAreUnderThreshold()
+    {
+        $this->storage->setNumberOfFailures(
+            self::SERVICE_NAME,
+            self::MAX_FAILURES - 1
+        );
+    }
 
-        $storage->saveStrategyData(
-            $strategy,
+    private function waitTimeHaveOccurred()
+    {
+        $this->backoffStrategy->waitTime(Argument::any(), Argument::any())
+            ->willReturn(0);
+        $this->storage->saveStrategyData(
+            $this->sut,
             self::SERVICE_NAME,
             self::LAST_ATTEMPT_KEY,
-            floor(microtime(true) * 1000) - self::ONE_SECOND);
-
-        $strategy->isAvailable(self::SERVICE_NAME);
-        $this->assertEquals(1, $storage->getStrategyData($strategy, self::SERVICE_NAME, "attempts"));
-
-        $storage->setNumberOfFailures(self::SERVICE_NAME, self::MAX_FAILURES);
-        $storage->saveStrategyData(
-            $strategy,
-            self::SERVICE_NAME,
-            self::LAST_ATTEMPT_KEY,
-            floor(microtime(true) * 1000) - self::ONE_SECOND);
-        $strategy->isAvailable(self::SERVICE_NAME);
-        $this->assertEquals(2, $storage->getStrategyData($strategy, self::SERVICE_NAME, "attempts"));
+            floor(microtime(true) * 1000) - 1);
     }
 }
