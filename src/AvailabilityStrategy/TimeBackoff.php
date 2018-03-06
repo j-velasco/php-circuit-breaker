@@ -12,23 +12,27 @@ class TimeBackoff implements AvailabilityStrategy
 
     /** @var Storage */
     protected $storage;
+    /** @var BackoffStrategy */
+    private $backoffStrategy;
     /** @var int */
     protected $maxFailures;
     /** @var int initial time to wait in milliseconds */
     protected $baseWaitTime;
-    /** @var BackoffStrategy */
-    private $backoffStrategy;
+    /** @var int */
+    private $maxWaitTime;
 
     public function __construct(
         Storage $storage,
         BackoffStrategy $backoffStrategy,
         int $maxFailures,
-        int $baseWaitTime
+        int $baseWaitTime,
+        int $maxWaitTime
     ) {
         $this->storage = $storage;
         $this->maxFailures = $maxFailures;
         $this->baseWaitTime = $baseWaitTime;
         $this->backoffStrategy = $backoffStrategy;
+        $this->maxWaitTime = $maxWaitTime;
     }
 
     public function isAvailable(string $serviceName): bool

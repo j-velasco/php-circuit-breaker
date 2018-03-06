@@ -9,9 +9,10 @@ use Prophecy\Prophecy\ObjectProphecy;
 final class TimeBackoffTest extends TestCase
 {
     const SERVICE_NAME = 'service name';
-    const MAX_FAILURES = 1;
-    const ONE_SECOND = 1000;
     const LAST_ATTEMPT_KEY = "last_attempt";
+    const MAX_FAILURES = 1;
+    const BASE_WAIT_TIME = 200; // 200 ms
+    const MAX_WAIT_TIME = 30000; // 30 secs
 
     /** @var InMemoryStorage */
     private $storage;
@@ -29,7 +30,8 @@ final class TimeBackoffTest extends TestCase
             $this->storage,
             $this->backoffStrategy->reveal(),
             self::MAX_FAILURES,
-            self::ONE_SECOND
+            self::BASE_WAIT_TIME,
+            self::MAX_WAIT_TIME
         );
     }
 
@@ -50,7 +52,7 @@ final class TimeBackoffTest extends TestCase
             floor(microtime(true) * 1000)
         );
         $this->setFailuresToMaxAllowed($this->storage);
-        $this->backoffStrategy->waitTime(Argument::any(), self::ONE_SECOND)
+        $this->backoffStrategy->waitTime(Argument::any(), self::BASE_WAIT_TIME)
             ->willReturn(100);
         $this->assertFalse($this->sut->isAvailable(self::SERVICE_NAME));
     }
@@ -59,7 +61,7 @@ final class TimeBackoffTest extends TestCase
     public function it_closes_the_circuit_after_timeout()
     {
         $this->setFailuresToMaxAllowed();
-        $oneSecAndOneMillisecond = floor((microtime(true) * 1000)) - self::ONE_SECOND - 1;
+        $oneSecAndOneMillisecond = floor((microtime(true) * 1000)) - self::BASE_WAIT_TIME - 1;
         $this->storage->saveStrategyData(
             $this->sut,
             self::SERVICE_NAME,
@@ -67,8 +69,8 @@ final class TimeBackoffTest extends TestCase
             (string) $oneSecAndOneMillisecond
         );
 
-        $this->backoffStrategy->waitTime(Argument::any(), self::ONE_SECOND)
-            ->willReturn(self::ONE_SECOND);
+        $this->backoffStrategy->waitTime(Argument::any(), self::BASE_WAIT_TIME)
+            ->willReturn(self::BASE_WAIT_TIME);
 
         $this->assertTrue($this->sut->isAvailable(self::SERVICE_NAME));
         $this->assertEquals(0, $this->storage->numberOfFailures(self::SERVICE_NAME));
@@ -77,16 +79,8 @@ final class TimeBackoffTest extends TestCase
     /** @test */
     public function it_reports_as_available_on_storage_failures()
     {
-        $storage = new InMemoryStorage();
-        $strategy = new TimeBackoff(
-            $storage,
-            $this->prophesize(BackoffStrategy::class)->reveal(),
-            self::MAX_FAILURES,
-            self::ONE_SECOND
-        );
-
-        $storage->throwExceptionInNumberOfFailures();
-        $this->assertTrue($strategy->isAvailable(self::SERVICE_NAME));
+        $this->storage->throwExceptionInNumberOfFailures();
+        $this->assertTrue($this->sut->isAvailable(self::SERVICE_NAME));
     }
 
 
