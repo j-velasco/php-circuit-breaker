@@ -2,10 +2,9 @@
 
 namespace JVelasco\CircuitBreaker\AvailabilityStrategy\Backoff;
 
-use JVelasco\CircuitBreaker\AvailabilityStrategy\Backoff\Fixed;
 use PHPUnit\Framework\TestCase;
 
-final class FixedWaitTimeToRetryTest extends TestCase
+final class FixedTest extends TestCase
 {
     /** @test */
     public function it_wait_always_the_base_wait_time()
