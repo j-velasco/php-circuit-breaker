@@ -2,7 +2,7 @@
 
 namespace JVelasco\CircuitBreaker;
 
-use JVelasco\CircuitBreaker\APCu\SharedStorage;
+use JVelasco\CircuitBreaker\Adapters\APCuStorage;
 use JVelasco\CircuitBreaker\AvailabilityStrategy\Backoff\Exponential;
 use JVelasco\CircuitBreaker\AvailabilityStrategy\TimeBackoff;
 
@@ -13,7 +13,7 @@ class Factory
         int $baseWaitTime = 20,
         int $maxWaitTime = 30000
     ): CircuitBreaker {
-        $storage = new SharedStorage();
+        $storage = new APCuStorage();
         $strategy = new TimeBackoff(
             $storage,
             new Exponential(),

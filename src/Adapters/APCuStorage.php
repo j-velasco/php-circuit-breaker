@@ -1,12 +1,12 @@
 <?php
 
-namespace JVelasco\CircuitBreaker\APCu;
+namespace JVelasco\CircuitBreaker\Adapters;
 
 use JVelasco\CircuitBreaker\AvailabilityStrategy;
 use JVelasco\CircuitBreaker\AvailabilityStrategy\Storage;
 use \JVelasco\CircuitBreaker\FailuresCounterStorage;
 
-final class SharedStorage implements FailuresCounterStorage, Storage
+final class APCuStorage implements FailuresCounterStorage, Storage
 {
     private $failuresCounterPrefix;
 

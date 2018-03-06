@@ -1,11 +1,11 @@
 <?php
 
-namespace JVelasco\CircuitBreaker\APCu;
+namespace JVelasco\CircuitBreaker\Adapters;
 
 use JVelasco\CircuitBreaker\AvailabilityStrategy;
 use PHPUnit\Framework\TestCase;
 
-final class SharedStorageTest extends TestCase
+final class APCuStorageTest extends TestCase
 {
     const SERVICE_NAME = "a service";
 
@@ -17,7 +17,7 @@ final class SharedStorageTest extends TestCase
     /** @test */
     public function it_increments_failures()
     {
-        $storage = new SharedStorage();
+        $storage = new APCuStorage();
 
         $storage->incrementFailures(self::SERVICE_NAME);
 
@@ -28,7 +28,7 @@ final class SharedStorageTest extends TestCase
     /** @test */
     public function it_decrements_failures()
     {
-        $storage = new SharedStorage();
+        $storage = new APCuStorage();
 
         apcu_add("cb_failures.a service", 2);
         $storage->decrementFailures(self::SERVICE_NAME);
@@ -40,7 +40,7 @@ final class SharedStorageTest extends TestCase
     /** @test */
     public function it_not_decrement_under_zero()
     {
-        $storage = new SharedStorage();
+        $storage = new APCuStorage();
 
         $storage->decrementFailures(self::SERVICE_NAME);
         $nbOfFailures = apcu_fetch("cb_failures.a service");
@@ -50,7 +50,7 @@ final class SharedStorageTest extends TestCase
     /** @test */
     public function it_return_number_of_failures()
     {
-        $storage = new SharedStorage();
+        $storage = new APCuStorage();
 
         $this->assertEquals(0, $storage->numberOfFailures(self::SERVICE_NAME));
         $storage->incrementFailures(self::SERVICE_NAME);
@@ -63,7 +63,7 @@ final class SharedStorageTest extends TestCase
         $strategy = $this->prophesize(AvailabilityStrategy::class);
         $strategy->getId()->willReturn("strategy_id");
 
-        $storage = new SharedStorage();
+        $storage = new APCuStorage();
         $storage->saveStrategyData(
             $strategy->reveal(),
             self::SERVICE_NAME,
@@ -79,7 +79,7 @@ final class SharedStorageTest extends TestCase
     /** @test */
     public function it_reset_failure_counters()
     {
-        $storage = new SharedStorage();
+        $storage = new APCuStorage();
         $storage->incrementFailures(self::SERVICE_NAME);
         $storage->resetFailuresCounter(self::SERVICE_NAME);
         $this->assertEquals(0, $storage->numberOfFailures(self::SERVICE_NAME));
