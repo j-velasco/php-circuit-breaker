@@ -100,6 +100,17 @@ final class TimeBackoffTest extends TestCase
         $this->assertEquals(2, $this->storage->getStrategyData($this->sut, self::SERVICE_NAME, "attempts"));
     }
 
+    /** @test */
+    public function it_no_wait_longer_than_max_wait_time()
+    {
+        $this->setFailuresToMaxAllowed();
+        $this->maxWaitTimeHaveOccurred();
+        $this->backoffStrategy->waitTime(Argument::any(), self::BASE_WAIT_TIME)
+            ->willReturn(self::MAX_WAIT_TIME + 1);
+
+        $this->assertTrue($this->sut->isAvailable(self::SERVICE_NAME));
+    }
+
     private function setFailuresToMaxAllowed()
     {
         $this->storage->setNumberOfFailures(
@@ -125,5 +136,14 @@ final class TimeBackoffTest extends TestCase
             self::SERVICE_NAME,
             self::LAST_ATTEMPT_KEY,
             floor(microtime(true) * 1000) - 1);
+    }
+
+    private function maxWaitTimeHaveOccurred()
+    {
+        return $this->storage->saveStrategyData(
+            $this->sut,
+            self::SERVICE_NAME,
+            self::LAST_ATTEMPT_KEY,
+            floor(microtime(true) * 1000) - self::MAX_WAIT_TIME);
     }
 }

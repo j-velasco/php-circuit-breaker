@@ -43,7 +43,7 @@ class TimeBackoff implements AvailabilityStrategy
             }
 
             $attempt = $this->getLastAttempt($serviceName);
-            if ($this->millisecondsSinceLastAttempt($serviceName) > $this->backoffStrategy->waitTime($attempt, $this->baseWaitTime)) {
+            if ($this->millisecondsSinceLastAttempt($serviceName) > $this->waitTime($attempt)) {
                 $this->saveAttempt($serviceName, $attempt+1);
                 return true;
             }
@@ -52,6 +52,11 @@ class TimeBackoff implements AvailabilityStrategy
         } catch (StorageException $ex) {
             return true;
         }
+    }
+
+    public function getId(): string
+    {
+        return $this->backoffStrategy->id();
     }
 
     private function getLastAttemptTime(string $serviceName): int
@@ -64,25 +69,28 @@ class TimeBackoff implements AvailabilityStrategy
         return $lastTryTimestamp ? $lastTryTimestamp : $this->now();
     }
 
-    private function now(): int
-    {
-        return floor(microtime(true) * 1000);
-    }
-
     private function getLastAttempt($serviceName): int
     {
         return (int) $this->storage->getStrategyData($this, $serviceName, self::ATTEMPTS_KEY);
-    }
-
-    public function getId(): string
-    {
-        return $this->backoffStrategy->id();
     }
 
     private function millisecondsSinceLastAttempt(string $serviceName): int
     {
         $lastAttempt = $this->getLastAttemptTime($serviceName);
         return $this->now() - $lastAttempt;
+    }
+
+    private function now(): int
+    {
+        return floor(microtime(true) * 1000);
+    }
+
+    private function waitTime($attempt): int
+    {
+        return min(
+            $this->backoffStrategy->waitTime($attempt, $this->baseWaitTime),
+            $this->maxWaitTime
+        );
     }
 
     private function saveAttempt(string $serviceName, int $attempt)
